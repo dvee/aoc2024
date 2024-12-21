@@ -53,4 +53,46 @@ defmodule Problem12Test do
     region1 = List.last(regions)
     assert Problem12.sides(region1) == 8
   end
+
+  test "calculates part 2 on test input" do
+    {:ok, input} = File.read('lib/problem12/input12_test.txt')
+    assert Problem12.run2(input) == 1206
+  end
+
+  test "calculates part 2 on other test inputs" do
+    i1 = "AAAA
+BBCD
+BBCC
+EEEC"
+    assert Problem12.run2(i1) == 80
+
+    i2 = "OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO"
+    assert Problem12.run2(i2) == 436
+
+    i3 = "EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE"
+    assert Problem12.run2(i3) == 236
+
+    i4 = "AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA"
+    assert Problem12.run2(i4) == 368
+
+  end
+
+  test "outputs part 2" do
+    {:ok, input} = File.read('lib/problem12/input12.txt')
+    IO.inspect result = Problem12.run2(input)
+    assert result == 877492
+  end
 end

@@ -9,6 +9,14 @@ defmodule Problem12 do
     |> Enum.sum()
   end
 
+  def run2(input) do
+    grid = parse_input(input)
+
+    regions(grid)
+    |> Enum.map(&price2/1)
+    |> Enum.sum()
+  end
+
   def parse_input(input) do
     Grid2D.to_map(input)
   end
@@ -60,6 +68,10 @@ defmodule Problem12 do
     perimeter(region) * MapSet.size(region)
   end
 
+  def price2(region) do
+    sides(region) * MapSet.size(region)
+  end
+
   def neighbours({x, y}) do
     [
       {x - 1, y},
@@ -82,21 +94,65 @@ defmodule Problem12 do
   end
 
   def corners(region, {x, y}) do
-    Enum.filter([{:n, :e}, {:n, :w}, {:s, :e}, {:s, :w}], fn {d1, d2} ->
-      not MapSet.member?(region, compass_neighbours({x, y})[d1]) and
-        not MapSet.member?(region, compass_neighbours({x, y})[d2])
-    end)
-    |> Enum.map(fn {d1, d2} ->
-      case {d1, d2} do
-        {:n, :e} -> {x + 1, y}
-        {:n, :w} -> {x, y}
-        {:s, :e} -> {x + 1, y + 1}
-        {:s, :w} -> {x, y + 1}
-      end
-    end)
+    convex_corners =
+      Enum.filter([{:n, :e}, {:n, :w}, {:s, :e}, {:s, :w}], fn {d1, d2} ->
+        not MapSet.member?(region, compass_neighbours({x, y})[d1]) and
+          not MapSet.member?(region, compass_neighbours({x, y})[d2])
+      end)
+      |> Enum.map(fn {d1, d2} ->
+        case {d1, d2} do
+          {:n, :e} -> {x + 1, y}
+          {:n, :w} -> {x, y}
+          {:s, :e} -> {x + 1, y + 1}
+          {:s, :w} -> {x, y + 1}
+        end
+      end)
+
+    concave_corners =
+      Enum.filter([{:n, :e, :ne}, {:n, :w, :nw}, {:s, :e, :se}, {:s, :w, :sw}], fn {d1, d2,
+                                                                                    d_corner} ->
+        MapSet.member?(region, compass_neighbours({x, y})[d1]) and
+          MapSet.member?(region, compass_neighbours({x, y})[d2]) and
+          not MapSet.member?(region, compass_neighbours({x, y})[d_corner])
+      end)
+      |> Enum.map(fn {_, _, d_corner} ->
+        case d_corner do
+          :ne -> {x + 1, y}
+          :nw -> {x, y}
+          :se -> {x + 1, y + 1}
+          :sw -> {x, y + 1}
+        end
+      end)
+
+    z_corners =
+      Enum.filter([{:n, :e, :ne}, {:n, :w, :nw}, {:s, :e, :se}, {:s, :w, :sw}], fn {d1, d2,
+                                                                                    d_corner} ->
+        not MapSet.member?(region, compass_neighbours({x, y})[d1]) and
+          not MapSet.member?(region, compass_neighbours({x, y})[d2]) and
+          MapSet.member?(region, compass_neighbours({x, y})[d_corner])
+      end)
+      |> Enum.map(fn {_, _, d_corner} ->
+        case d_corner do
+          :ne -> {x + 1, y, :z}
+          :nw -> {x, y, :z}
+          :se -> {x + 1, y + 1, :z}
+          :sw -> {x, y + 1, :z}
+        end
+      end)
+
+    concave_corners ++ convex_corners ++ z_corners
   end
 
   def compass_neighbours({x, y}) do
-    %{n: {x, y - 1}, s: {x, y + 1}, e: {x + 1, y}, w: {x - 1, y}}
+    %{
+      n: {x, y - 1},
+      s: {x, y + 1},
+      e: {x + 1, y},
+      w: {x - 1, y},
+      ne: {x + 1, y - 1},
+      nw: {x - 1, y - 1},
+      se: {x + 1, y + 1},
+      sw: {x - 1, y + 1}
+    }
   end
 end
