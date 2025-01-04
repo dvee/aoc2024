@@ -34,4 +34,21 @@ defmodule Utils.Grid2D do
     |> Enum.join("\n")
     |> IO.puts()
   end
+
+  def compass_neighbours({x, y}) do
+    %{
+      n: {x, y - 1},
+      s: {x, y + 1},
+      e: {x + 1, y},
+      w: {x - 1, y},
+      ne: {x + 1, y - 1},
+      nw: {x - 1, y - 1},
+      se: {x + 1, y + 1},
+      sw: {x - 1, y + 1}
+    }
+  end
+
+  def get(grid, {x, y}) do
+    Map.get(grid, {x, y})
+  end
 end
